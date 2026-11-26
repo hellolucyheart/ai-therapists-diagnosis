@@ -54,6 +54,19 @@ def validate(line: str) -> str:
     return text
 
 
+def verify_output(path: str, expected: str) -> None:
+    """Read the written file back and confirm it holds exactly the line.
+
+    A silent partial write would hand the judge a different text than the
+    one this session wrote, so the entry is only real once the bytes on
+    disk match the validated line, newline included.
+    """
+    with open(path, encoding="utf-8") as handle:
+        stored = handle.read()
+    if stored != expected + "\n":
+        raise ValueError("written entry does not match the validated line")
+
+
 def main() -> int:
     text = validate(THERAPIST_LINE)
     folder = os.path.dirname(OUTPUT_PATH)
@@ -61,6 +74,7 @@ def main() -> int:
         os.makedirs(folder, exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(text + "\n")
+    verify_output(OUTPUT_PATH, text)
     sys.stdout.write(text + "\n")
     return 0
 
